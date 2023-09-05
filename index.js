@@ -18,40 +18,35 @@ app.get("/", function (req, res) {
   res.sendFile(__dirname + "/views/index.html");
 });
 
-app.get("/api/:time", function (req, res) {
-  function unixTimeStamptoUtc(unixTimeStamp) {
-    const date = new Date(unixTimeStamp);
-    const utcString = date.toUTCString();
-    return utcString;
-  }
-  function utcToUnixTimeStamp(utcString) {
-    const date = new Date(utcString);
-    const unixTimeStamp = date.getTime();
-
-    return unixTimeStamp;
-  }
-  if (!isNaN(req.params.time)) {
-    const timeParam = Number(req.params.time);
-    const result = unixTimeStamptoUtc(timeParam);
-    const data = { unix: timeParam, utc: result };
-    res.json(data);
-  } else if (isNaN(req.params.time)) {
-    const result = utcToUnixTimeStamp(req.params.time);
-    if (!isNaN(result)) {
-      const data = { unix: result, utc: req.params.time };
-      res.json(data);
-    } else {
-      const data = { unix: null, utc: null };
-      res.json(data);
-    }
-  } else {
-    const data = { unix: null, utc: null };
-    res.json(data);
-  }
+app.get("/api/", function (req, res) {
+  res.json({
+    unix: new Date().getTime(),
+    utc: new Date().toUTCString(),
+  });
 });
 
-app.get("/api/hello", function (req, res) {
-  res.json({ greeting: "hello API" });
+app.get("/api/:time", function (req, res) {
+  let date = new Date(req.params.time);
+
+  if (date.toUTCString() === "Invalid Date") {
+    date = new Date(+req.params.time);
+    console.log(date);
+    console.log(date.toUTCString());
+    if (date.toUTCString() === "Invalid Date") {
+      res.json({ error: "Invalid Date" });
+      return;
+    } else {
+      res.json({
+        unix: date.getTime(),
+        utc: date.toUTCString(),
+      });
+    }
+  } else {
+    res.json({
+      unix: date.getTime(),
+      utc: date.toUTCString(),
+    });
+  }
 });
 
 // listen for requests :)
